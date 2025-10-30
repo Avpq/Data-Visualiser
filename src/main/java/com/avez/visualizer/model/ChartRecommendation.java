@@ -6,7 +6,7 @@ public class ChartRecommendation {
     private ChartType chartType;
     private String reason; // Why this chart is recommended
     private int priority; // 1 = best, 2 = good, 3 = acceptable
-    private String warning; // Optional warning message
+    private String warning; // Warning message
 
     public ChartRecommendation(ChartType chartType, String reason, int priority) {
         this.chartType = chartType;
@@ -56,7 +56,7 @@ public class ChartRecommendation {
     }
 
     public boolean hasWarning() {
-        return warning != null && !warning.isEmpty();
+        return warning != null && !warning.isEmpty(); // takes care of both the constructor types
     }
 
     @Override

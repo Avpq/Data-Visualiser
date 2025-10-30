@@ -1,5 +1,6 @@
 package com.avez.visualizer.model;
 
+
 //Defines the types of charts that can be generated
 public enum ChartType {
     PIE_CHART, // For categorical data (≤7 categories)

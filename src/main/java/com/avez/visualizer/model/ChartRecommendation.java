@@ -19,7 +19,9 @@ public class ChartRecommendation {
         this.chartType = chartType;
         this.reason = reason;
         this.priority = priority;
-        this.warning = warning;
+
+        // defensive programming measure, constructor ensures warning is either null or a real string, read notes on iPad for further explanation
+        this.warning = (warning == null || warning.trim().isEmpty()) ? null : warning.trim();
     }
 
     // Getters and Setters
@@ -56,7 +58,7 @@ public class ChartRecommendation {
     }
 
     public boolean hasWarning() {
-        return warning != null && !warning.isEmpty(); // takes care of both the constructor types
+        return warning != null;
     }
 
     @Override

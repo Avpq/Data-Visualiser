@@ -65,7 +65,13 @@ public class CSVAnalyzer {
              * To determine the actual data How many rows have actual data we use the validValues parameter
              */
 
+
             // Check for null/empty
+            /*
+             * This is our small data cleaning segment -->
+             * 1.) First autmoatically eliminate the null values from further processing
+             * 2.) use tim() method to get rid of leading/trailing spaces 
+             */
             if (value == null || value.trim().isEmpty()) {
                 nullCount++;
                 continue;
@@ -78,7 +84,7 @@ public class CSVAnalyzer {
                 numericCount++;
 
                 // Check if this number has a decimal point, IDs (postal codes, phone numbers) never have decimals
-                // Real quantities (prices, measurements) often do
+                // Real quantities (prices, measurements) OFTEN do
                 if (value.contains(".")) {
                     decimalCount++;
                 }
@@ -121,7 +127,13 @@ public class CSVAnalyzer {
         double datePercent = (double) dateCount / validValues;
         double booleanPercent = (double) booleanCount / validValues;
 
+
         // Check dates and booleans first (they take priority)
+        /*
+         * We check for dates and booleans first because they have distinct, easily recognizable patterns — unlike numeric or text data, which are more ambiguous. 
+         * This ensures that columns like ‘1/0’ or ‘25/10/2024’ aren’t misclassified as numeric or text. 
+         * In short, structured and semantic data types take priority over more general ones.
+         */
         if (datePercent >= 0.8) // 80% is a practical balance between accuracy and tolerance for noisy or imperfect data.
             return DataType.DATE;
 
@@ -144,6 +156,13 @@ public class CSVAnalyzer {
              * - Phone Number: 9876543210, 9876543211, ... (unique, no decimals) → TEXT
              * - Price: 999.99, 25.50, 75.00 (has decimals) → NUMERIC
              * - Quantity: 5, 10, 8 (low uniqueness, small dataset) → NUMERIC
+             * 
+             * This condition distinguishes numeric identifiers from real numeric
+             * quantities. IDs tend to be unique, integer-only, and appear in large datasets
+             * — unlike real numeric data, which repeats and may have decimals. So we check
+             * if 90%+ of the values are unique, the dataset is large enough (≥100 rows),
+             * and less than 10% have decimals. If all three hold, it’s most likely an
+             * identifier, not a measurable numeric field — so we classify it as text.
              */
             if (uniquePercent >= 0.9 && validValues >= 100 && decimalPercent < 0.1) {
                 return DataType.TEXT; // It's an ID, not a real number

@@ -24,7 +24,7 @@ public class ChartGenerator {
     private static final int CHART_HEIGHT = 600;
 
     /**
-     * Generates a chart for a single column
+     * Generates a chart wrt a single column
      * 
      * @param columnName Name of the column to visualize
      * @param records    All CSV records
@@ -87,7 +87,7 @@ public class ChartGenerator {
     }
 
 
-    // pie chart
+    // pie chart, JFreeChart returns a chart object (from JFreeChart library)
     private JFreeChart createPieChart(String columnName, List<CSVRecord> records) {
         Map<String, Integer> valueFrequency = countValueFrequency(columnName, records);
 
@@ -96,12 +96,12 @@ public class ChartGenerator {
             dataset.setValue(entry.getKey(), entry.getValue());
         }
 
-        return ChartFactory.createPieChart(
+        return ChartFactory.createPieChart( // ChartFactory is a factory class from JFreeChart library that creates charts
                 columnName + " Distribution",
                 dataset,
-                true, // Legend
-                true, // Tooltips
-                false // URLs
+                true, // Shows a legend (key) that explains what each color represents
+                true, // Tooltips, When you hover over a slice with your mouse, it shows detailed info, would not make sense when saving as a png, but when viewing in GUI fayada hoga
+                false // URLs, Whether chart elements are clickable links (for web-based charts)
         );
     }
 

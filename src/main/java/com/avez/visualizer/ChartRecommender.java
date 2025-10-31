@@ -1,3 +1,5 @@
+// our default fallback when nothing happens is bar chart
+
 package com.avez.visualizer;
 
 import com.avez.visualizer.model.ChartRecommendation;
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-// Recommends appropriate chart types based on column data type and
+// Recommends appropriate chart types based on column data type
 public class ChartRecommender {
 
     // Recommends chart types for the single column
@@ -22,7 +24,7 @@ public class ChartRecommender {
         switch (dataType) {
             case CATEGORICAL:
                 recommendations.addAll(recommendForCategorical(uniqueValues)); // recommendForCategorical() returns a  List<ChartRecommendation> of multiple
-                break;                                                         // recommendations), not a single ChartRecommendation, hence addAll() method is used
+                break;                                                         // recommendations, not a single ChartRecommendation, hence addAll() method is used
 
             case NUMERIC:
                 recommendations.addAll(recommendForNumeric(columnInfo));
@@ -57,8 +59,8 @@ public class ChartRecommender {
     private List<ChartRecommendation> recommendForCategorical(int uniqueValues) {
         List<ChartRecommendation> recommendations = new ArrayList<>();
 
-        if (uniqueValues <= 7) {
-            // Ideal for pie/donut charts
+        if (uniqueValues <= 7) { // 7 is ideal for pie/donut charts, balance between readability and coverage
+
             recommendations.add(new ChartRecommendation(
                     ChartType.PIE_CHART,
                     "Perfect for showing distribution of " + uniqueValues + " categories",
@@ -74,8 +76,7 @@ public class ChartRecommender {
                     "Good for comparing categories",
                     2));
 
-        } else if (uniqueValues <= 10) {
-            // Too many for pie, but okay for bar
+        } else if (uniqueValues <= 10) { // Using else if, instead of directly else makes the condition explicit and future proof
             recommendations.add(new ChartRecommendation(
                     ChartType.BAR_CHART,
                     "Best for comparing " + uniqueValues + " categories",

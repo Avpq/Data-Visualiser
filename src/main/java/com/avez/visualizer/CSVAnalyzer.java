@@ -51,7 +51,7 @@ public class CSVAnalyzer {
         int booleanCount = 0;
         int nullCount = 0;
         int totalValues = 0;
-        int decimalCount = 0; //Tracks how many numeric values have decimals
+        int decimalCount = 0; //Tracks how many numeric values have decimals, used to determine the DataType of the column
 
 
         // Examine each value in this column
@@ -59,9 +59,10 @@ public class CSVAnalyzer {
             String value = record.get(columnName); // Gets the value from this row for the column we're analyzing
             totalValues++;
             /*
-             * totalValues represents the dataset size, while validValues(used aage) represents usable data. totalValues info is necessary as it helps to determine the 
-             * total number of ROWS and so help in the percentage calculation. to determine the actual data How many rows have actual data we use the
-             * validValues parameter
+             * totalValues represents the dataset size, while validValues(used aage) represents usable data. 
+             * totalValues info is necessary as it helps to determine the total number of ROWS and so help in the percentage calculation. 
+             * 
+             * To determine the actual data How many rows have actual data we use the validValues parameter
              */
 
             // Check for null/empty

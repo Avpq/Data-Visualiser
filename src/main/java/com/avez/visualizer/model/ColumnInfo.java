@@ -10,7 +10,7 @@ public class ColumnInfo {
     private int nullCount;
 
 
-    // the type of column cannot be decoded in the constructor here, will be handled seprately
+    // the type of column cannot be decoded in the constructor, is handled in the CSVAnalyzer file
     public ColumnInfo(String columnName) {
         this.columnName = columnName;
         this.totalValues = 0;

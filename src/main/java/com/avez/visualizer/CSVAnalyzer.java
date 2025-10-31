@@ -1,9 +1,9 @@
 package com.avez.visualizer;
 
-import com.avez.visualizer.model.CSVData;
+import com.avez.visualizer.model.CSVData; // CSVData container for header and records of the CSV file
 import com.avez.visualizer.model.ColumnInfo;
 import com.avez.visualizer.model.DataType;
-import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.csv.CSVRecord; // CSVRecord represents one row of data
 
 import java.time.LocalDate; // represents a date
 import java.time.format.DateTimeFormatter; // defines how to parse date strings 
@@ -17,22 +17,18 @@ public class CSVAnalyzer {
 
     // Common date formats to try when detecting dates
     private static final List<DateTimeFormatter> DATE_FORMATTERS = Arrays.asList(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd"),
             DateTimeFormatter.ofPattern("dd/MM/yyyy"),
             DateTimeFormatter.ofPattern("MM/dd/yyyy"),
             DateTimeFormatter.ofPattern("dd-MM-yyyy"),
             DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
-    /*
-     * ColumnInfo store metadata about one column
-     * CSVData container for header and records of the CSV file
-     * CSVRecord represents one row of data
-     */
+
+    // ColumnInfo store metadata about one column
     // this method is used to analyze the datatype of all the columns of the CSV
     public List<ColumnInfo> analyzeColumns(CSVData csvData) {
-        List<ColumnInfo> columnInfoList = new ArrayList<>(); // Creates an empty list that will store ColumnInfo objects, one per column
+        List<ColumnInfo> columnInfoList = new ArrayList<>(); // Creates an empty list that will store ColumnInfo objects, one columnInfo object represents 1 column
         List<String> headers = csvData.getHeaders();
-        List<CSVRecord> records = csvData.getRecords(); // gets all the data rows from the column ie from below header till end
+        List<CSVRecord> records = csvData.getRecords(); // gets all the data rows from the columns ie from below header till end
 
 
         // Analyze each column
@@ -45,7 +41,7 @@ public class CSVAnalyzer {
     }
 
 
-    // Analyzes a single column to determine its data type
+    // Analyzes a single column to determine its charecteristics totalValues, uniqueVales, nullValues and  ALSO the datatype
     private ColumnInfo analyzeEachCoumn(String columnName, List<CSVRecord> records) {
         ColumnInfo singleColumnInfo = new ColumnInfo(columnName); // creates the ColumnInfo object with the with the specified column name
 
@@ -55,7 +51,7 @@ public class CSVAnalyzer {
         int booleanCount = 0;
         int nullCount = 0;
         int totalValues = 0;
-        int decimalCount = 0; // NEW: Track how many numeric values have decimals
+        int decimalCount = 0; //Tracks how many numeric values have decimals
 
 
         // Examine each value in this column
@@ -80,8 +76,7 @@ public class CSVAnalyzer {
             if (isNumeric(value)) {
                 numericCount++;
 
-                // NEW: Check if this number has a decimal point
-                // IDs (postal codes, phone numbers) never have decimals
+                // Check if this number has a decimal point, IDs (postal codes, phone numbers) never have decimals
                 // Real quantities (prices, measurements) often do
                 if (value.contains(".")) {
                     decimalCount++;
@@ -99,7 +94,7 @@ public class CSVAnalyzer {
         singleColumnInfo.setUniqueValues(uniqueValues.size());
         singleColumnInfo.setNullCount(nullCount);
 
-        // now only datatype of the column is left and that is determined now
+        // now we determine the datatype of the column
         int validValues = totalValues - nullCount; // non-empty values in the column
         DataType dataType = determineDataType(
                 numericCount,
@@ -107,16 +102,16 @@ public class CSVAnalyzer {
                 booleanCount,
                 uniqueValues.size(),
                 validValues,
-                decimalCount); // NEW: Pass decimal count
+                decimalCount); 
 
         singleColumnInfo.setDataType(dataType); // now the singleColumnInfo object hold complete info about the specified column
         return singleColumnInfo;
     }
 
-    
+    // analyses datatype of the column
     private DataType determineDataType(int numericCount, int dateCount,
             int booleanCount, int uniqueCount,
-            int validValues, int decimalCount) { // NEW: Added decimalCount parameter
+            int validValues, int decimalCount) { 
         if (validValues == 0) {
             return DataType.UNKNOWN;
         }
@@ -126,13 +121,13 @@ public class CSVAnalyzer {
         double booleanPercent = (double) booleanCount / validValues;
 
         // Check dates and booleans first (they take priority)
-        if (datePercent >= 0.8)
+        if (datePercent >= 0.8) // 80% is a practical balance between accuracy and tolerance for noisy or imperfect data.
             return DataType.DATE;
 
         if (booleanPercent >= 0.8)
             return DataType.BOOLEAN;
 
-        // NEW: Smart numeric detection - distinguish IDs from real numbers
+        // Smart numeric detection - distinguish IDs from real numbers
         if (numericPercent >= 0.8) {
             double uniquePercent = (double) uniqueCount / validValues;
             double decimalPercent = numericCount > 0 ? (double) decimalCount / numericCount : 0;

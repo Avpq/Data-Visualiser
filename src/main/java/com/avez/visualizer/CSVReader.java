@@ -31,8 +31,8 @@ public class CSVReader {
         // Create parser and read the file
         CSVParser parser = CSVParser.parse(file, StandardCharsets.UTF_8, format);
 
-        List<String> headers = new ArrayList<>(parser.getHeaderMap().keySet()); // Extract headers from the parser
-        List<CSVRecord> records = parser.getRecords(); // Read all records into memory
+        List<String> headers = new ArrayList<>(parser.getHeaderMap().keySet()); // Headers were already read when parser was created, just extracting them to this LIST
+        List<CSVRecord> records = parser.getRecords(); // Reads the rest (esentially the data rows) from the CSV and stores them in the LIST recrods 
 
         parser.close();
 

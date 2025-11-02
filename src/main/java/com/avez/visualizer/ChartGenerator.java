@@ -135,12 +135,12 @@ public class ChartGenerator {
         }
 
         return ChartFactory.createBarChart(
-                columnName + " Frequency",
-                columnName,
-                "Count",
+                columnName + " Frequency", // heading name, of the chart olumnName = "Product", Title becomes: "Product Frequency"
+                columnName, // the x-axis label
+                "Count", // y-axis label
                 dataset,
-                PlotOrientation.VERTICAL,
-                false, // Legend
+                PlotOrientation.VERTICAL, // vertical or horizontal
+                false, // Legend, basically the color, since only one series no use of including legends 
                 true, // Tooltips
                 false // URLs
         );
@@ -189,64 +189,10 @@ public class ChartGenerator {
     }
 
 
-    // Creates a histogram showing distribution of numeric values, groups continuous numeric data into bins/ranges
-    private JFreeChart createHistogram(String columnName, List<CSVRecord> records) {
-        // Extract numeric values from the column
-        List<Double> numericValues = extractNumericValues(columnName, records);
-
-        if (numericValues.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "No numeric values found in column: " + columnName);
-        }
-
-        // Convert list to array for histogram
-        double[] values = numericValues.stream().mapToDouble(Double::doubleValue).toArray();
-
-        // Create histogram dataset with 10 bins
-        HistogramDataset dataset = new HistogramDataset();
-        dataset.addSeries(columnName, values, 10);
-
-        return ChartFactory.createHistogram(
-                columnName + " Distribution",
-                columnName,
-                "Frequency",
-                dataset,
-                PlotOrientation.VERTICAL,
-                false,
-                true,
-                false);
-    }
-
-
-    // // Creates a box plot showing statistical distribution Shows: min, Q1, median, Q3, max, and outliers
-    // private JFreeChart createBoxPlot(String columnName, List<CSVRecord> records) {
-    //     List<Double> numericValues = extractNumericValues(columnName, records);
-
-    //     if (numericValues.isEmpty()) {
-    //         throw new IllegalArgumentException(
-    //                 "No numeric values found in column: " + columnName);
-    //     }
-
-    //     // Create box and whisker dataset
-    //     DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
-    //     dataset.add(numericValues, "Series", columnName);
-
-    //     return ChartFactory.createBoxAndWhiskerChart(
-    //             columnName + " Distribution",
-    //             columnName,
-    //             "Value",
-    //             dataset,
-    //             false // Legend
-    //     );
-    // }
-    
+    // Creates a box plot showing statistical distribution Shows: min, Q1, median, Q3, max, and outliers
     private JFreeChart createBoxPlot(String columnName, List<CSVRecord> records) {
         List<Double> numericValues = extractNumericValues(columnName, records);
 
-        if (numericValues.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "No numeric values found in column: " + columnName);
-        }
 
         // Create box and whisker dataset
         DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
@@ -266,20 +212,44 @@ public class ChartGenerator {
                 .getRenderer();
 
         // Make it look cleaner
-        renderer.setFillBox(true); // Fill the box
-        renderer.setMeanVisible(false); // Hide the mean marker (reduces clutter)
+        renderer.setFillBox(true); // Solid box instead of hollow
+        renderer.setMeanVisible(false); // Hide the mean marker ie the diamond
         renderer.setMaximumBarWidth(0.10); // Make box narrower
 
         return chart;
     }
 
 
-    /**
-     * Creates a scatter plot showing correlation between two numeric columns
-     * 
-     * @param xColumnName Column for X-axis
-     * @param yColumnName Column for Y-axis
-     */
+    // Creates a histogram showing distribution of numeric values, groups continuous numeric data into bins/ranges
+    private JFreeChart createHistogram(String columnName, List<CSVRecord> records) {
+        // Extract numeric values from the column
+        List<Double> numericValues = extractNumericValues(columnName, records);
+
+        // The HistogramDataset class requires a primitive array (double[]), not a List.
+        double[] values = numericValues.stream().mapToDouble(Double::doubleValue).toArray();
+
+        // Prevents empty charts, see notes on iPad for more info
+        if (numericValues.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No numeric values found in column: " + columnName);
+        }
+
+        // Create histogram dataset with 10 bins
+        HistogramDataset dataset = new HistogramDataset();
+        dataset.addSeries(columnName, values, 10);
+
+        return ChartFactory.createHistogram(
+                columnName + " Distribution",
+                columnName,
+                "Frequency",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false,
+                true,
+                false);
+    }
+
+    // Creates a scatter plot showing correlation between two numeric columns
     private JFreeChart createScatterPlot(String xColumnName, String yColumnName, List<CSVRecord> records) {
         XYSeries series = new XYSeries("Data Points");
 
@@ -288,8 +258,7 @@ public class ChartGenerator {
             String xValue = record.get(xColumnName);
             String yValue = record.get(yColumnName);
 
-            if (xValue == null || yValue == null ||
-                    xValue.trim().isEmpty() || yValue.trim().isEmpty()) {
+            if (xValue == null || yValue == null || xValue.trim().isEmpty() || yValue.trim().isEmpty()) {
                 continue;
             }
 
@@ -303,6 +272,7 @@ public class ChartGenerator {
             }
         }
 
+        // Prevents empty charts, see notes on iPad for more info
         if (series.isEmpty()) {
             throw new IllegalArgumentException(
                     "No valid numeric pairs found for columns: " + xColumnName + ", " + yColumnName);

@@ -12,6 +12,12 @@ import java.util.Scanner;
 
 public class CLIInterface {
 
+    private enum LoadResult {
+        SUCCESS, // CSV loaded successfully
+        FAILED, // Loading failed (retry)
+        USER_EXIT // User wants to exit
+    }
+
     private Scanner scanner;
     private CSVReader csvReader;
     private CSVAnalyzer csvAnalyzer;
@@ -38,14 +44,22 @@ public class CLIInterface {
         while (running) {
             try {
                 // Step 1: Load CSV
-                if (!loadCSV()) {
-                    continue;
+                LoadResult result = loadCSV();
+
+                if (result == LoadResult.USER_EXIT) {
+                    running = false; // Exit the main loop
+                    break;
                 }
 
+                if (result == LoadResult.FAILED) {
+                    continue; // Retry loading
+                }
+
+                // result == LoadResult.SUCCESS, continue with analysis
                 // Step 2: Analyze columns
                 analyzeColumns();
 
-                // Step 3: Let user select column and generate chart
+                // Step 3: Generate charts
                 boolean continueGenerating = true;
                 while (continueGenerating) {
                     if (selectColumnAndGenerateChart()) {
@@ -74,66 +88,62 @@ public class CLIInterface {
         scanner.close();
     }
 
-    /**
-     * Prints welcome message
-     */
+
+    // welcome text
     private void printWelcome() {
         System.out.println("╔════════════════════════════════════════╗");
-        System.out.println("║      📊 CSV VISUALIZER TOOL 📊        ║");
-        System.out.println("║   Transform Your Data into Charts     ║");
+        System.out.println("║      📊 CSV VISUALIZER TOOL 📊          ║");
+        System.out.println("║   Transform Your Data into Charts      ║");
         System.out.println("╚════════════════════════════════════════╝");
         System.out.println();
     }
 
-    /**
-     * Loads a CSV file
-     */
-    private boolean loadCSV() {
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("STEP 1: LOAD CSV FILE");
-        System.out.println("=".repeat(50));
+   // loads the csv file, as specified by the user
+    private LoadResult loadCSV() {
+       System.out.println("\n" + "=".repeat(50));
+       System.out.println("STEP 1: LOAD CSV FILE");
+       System.out.println("=".repeat(50));
 
-        System.out.print("📁 Enter CSV file path (or 'exit' to quit): ");
-        String filePath = scanner.nextLine().trim();
+       System.out.print("📁 Enter CSV file path (or 'exit' to quit): ");
+       String filePath = scanner.nextLine().trim();
 
-        if (filePath.equalsIgnoreCase("exit")) {
-            return false;
-        }
+       if (filePath.equalsIgnoreCase("exit")) {
+           return LoadResult.USER_EXIT; // user wants to exit
+       }
 
-        if (filePath.isEmpty()) {
-            System.out.println("❌ File path cannot be empty!");
-            return false;
-        }
+       if (filePath.isEmpty()) {
+           System.out.println("❌ File path cannot be empty!");
+           return LoadResult.FAILED; // oading failed
+       }
 
-        try {
-            System.out.println("\n⏳ Loading CSV file...");
-            currentData = csvReader.readCSV(filePath);
+       try {
+           System.out.println("\n⏳ Loading CSV file...");
+           currentData = csvReader.readCSV(filePath);
 
-            System.out.println("✅ CSV loaded successfully!");
-            System.out.println("   📊 Rows: " + currentData.getRowCount());
-            System.out.println("   📋 Columns: " + currentData.getColumnCount());
+           System.out.println("✅ CSV loaded successfully!");
+           System.out.println("   📊 Rows: " + currentData.getRowCount());
+           System.out.println("   📋 Columns: " + currentData.getColumnCount());
 
-            return true;
+           return LoadResult.SUCCESS; // success
 
-        } catch (IOException e) {
-            System.err.println("❌ Error loading CSV: " + e.getMessage());
-            System.out.println("   💡 Make sure the file path is correct and the file exists.");
-            return false;
-        }
-    }
+       } catch (IOException e) {
+           System.err.println("❌ Error loading CSV: " + e.getMessage());
+           System.out.println("   💡 Make sure the file path is correct and the file exists.");
+           return LoadResult.FAILED; // loading failed
+       }
+   }
 
-    /**
-     * Analyzes the loaded CSV columns
-     */
+
+
+    // Analyzes the loaded CSV columns
     private void analyzeColumns() {
         System.out.println("\n⏳ Analyzing columns...");
         columnInfos = csvAnalyzer.analyzeColumns(currentData);
         System.out.println("✅ Analysis complete!");
     }
 
-    /**
-     * Lets user select a column and generate a chart
-     */
+
+    // Lets user select a column and generate a chart
     private boolean selectColumnAndGenerateChart() {
         // Display available columns
         System.out.println("\n" + "=".repeat(50));
@@ -143,7 +153,7 @@ public class CLIInterface {
         System.out.println("\n📊 Available Columns:\n");
         for (int i = 0; i < columnInfos.size(); i++) {
             ColumnInfo info = columnInfos.get(i);
-            System.out.printf("%2d. %-25s [%s] - %d unique values%n",
+            System.out.printf("%2d. %-25s [%s] - %d unique values%n", // used printf as it provides formatting options 
                     i + 1,
                     info.getColumnName(),
                     info.getDataType(),
@@ -152,7 +162,7 @@ public class CLIInterface {
 
         // Get user selection
         System.out.print("\n🔢 Select column number (or 0 to go back): ");
-        String input = scanner.nextLine().trim();
+        String input = scanner.nextLine().trim(); // see on iPad notes, explained why nextLine() is used in place of nextInt()
 
         int columnIndex;
         try {
@@ -198,7 +208,7 @@ public class CLIInterface {
             ChartRecommendation rec = recommendations.get(i);
             System.out.printf("%d. %s (Priority: %d)%n",
                     i + 1,
-                    formatChartTypeName(rec.getChartType()),
+                    formatChartTypeName(rec.getChartType()), // this method converts the enum to a nice, readable format
                     rec.getPriority());
             System.out.println("   💡 " + rec.getReason());
             if (rec.hasWarning()) {
@@ -226,7 +236,8 @@ public class CLIInterface {
 
         ChartRecommendation selectedChart = recommendations.get(chartIndex);
 
-        // NEW: Get output file path and name
+
+        // Get output file path and name
         System.out.println("\n" + "=".repeat(50));
         System.out.println("STEP 4: SPECIFY OUTPUT LOCATION");
         System.out.println("=".repeat(50));
@@ -237,6 +248,10 @@ public class CLIInterface {
 
         System.out.print("\nChoose option (1 or 2): ");
         String saveOption = scanner.nextLine().trim();
+        if(!(saveOption.equals("1")) && !(saveOption.equals("2"))) {
+            System.out.println("choose appropirate option, please  try again");
+            return false;
+        }
 
         String outputPath;
 
@@ -255,7 +270,7 @@ public class CLIInterface {
             } else {
                 // Ensure path ends with separator
                 if (!directoryPath.endsWith("/") && !directoryPath.endsWith("\\")) {
-                    directoryPath += "/";
+                    directoryPath += "/"; // / for both windows/mac/linux/unix basically all OS(S)
                 }
 
                 // Validate directory exists
@@ -344,9 +359,7 @@ public class CLIInterface {
         }
     }
 
-    /**
-     * Formats chart type name for display
-     */
+    // Formats chart type name for display
     private String formatChartTypeName(ChartType chartType) {
         String name = chartType.toString().replace("_", " ");
         // Capitalize first letter of each word

@@ -195,7 +195,7 @@ This project is open source and available for educational and personal use.
 
 ## Author
 
-Avez
+Avi Sahai
 
 ## Acknowledgments
 

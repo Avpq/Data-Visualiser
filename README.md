@@ -9,7 +9,6 @@ A powerful and user-friendly Java application for visualizing CSV data with inte
 - **Dual Interface**: Choose between CLI (Command Line Interface) or GUI (Graphical User Interface)
 - **Data Analysis**: Automatically detects data types (numeric, categorical, date) and provides statistical insights
 - **Cross-Platform**: Works on Windows, macOS, and Linux
-- **Unicode Support**: Beautiful icons and symbols with ASCII fallback for compatibility
 - **Easy Export**: Save charts as high-quality PNG images
 
 ## Supported Chart Types

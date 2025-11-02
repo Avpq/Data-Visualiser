@@ -9,5 +9,11 @@ pom.xml.versionsBackup
 .project
 .settings/
 .idea/
+.vscode/
 *.iml
 .DS_Store
+
+# Build artifacts
+dependency-reduced-pom.xml
+*.dmg
+aa Build Materials/

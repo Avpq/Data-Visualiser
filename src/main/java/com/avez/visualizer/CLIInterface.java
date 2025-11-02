@@ -63,7 +63,7 @@ public class CLIInterface {
                 boolean continueGenerating = true;
                 while (continueGenerating) {
                     if (selectColumnAndGenerateChart()) {
-                        System.out.print("\n🔄 Generate another chart? (y/n): ");
+                        System.out.print("\n" + UIRenderer.getIcon("reload") + " Generate another chart? (y/n): ");
                         String response = scanner.nextLine().trim().toLowerCase();
                         continueGenerating = response.equals("y") || response.equals("yes");
                     } else {
@@ -72,39 +72,36 @@ public class CLIInterface {
                 }
 
                 // Ask if user wants to load another CSV
-                System.out.print("\n📁 Load another CSV file? (y/n): ");
+                System.out.print("\n" + UIRenderer.getIcon("file") + " Load another CSV file? (y/n): ");
                 String response = scanner.nextLine().trim().toLowerCase();
                 running = response.equals("y") || response.equals("yes");
 
             } catch (Exception e) {
-                System.err.println("\n❌ Error: " + e.getMessage());
+                System.err.println("\n" + UIRenderer.getIcon("error") + " Error: " + e.getMessage());
                 System.out.print("\nTry again? (y/n): ");
                 String response = scanner.nextLine().trim().toLowerCase();
                 running = response.equals("y") || response.equals("yes");
             }
         }
 
-        System.out.println("\n👋 Thank you for using CSV Visualizer!");
+        System.out.println("\n" + UIRenderer.getIcon("wave") + " Thank you for using CSV Visualizer!");
         scanner.close();
     }
 
 
     // welcome text
     private void printWelcome() {
-        System.out.println("╔════════════════════════════════════════╗");
-        System.out.println("║      📊 CSV VISUALIZER TOOL 📊          ║");
-        System.out.println("║   Transform Your Data into Charts      ║");
-        System.out.println("╚════════════════════════════════════════╝");
-        System.out.println();
+        UIRenderer.printWelcomeBox(
+            UIRenderer.getIcon("chart") + " CSV VISUALIZER TOOL " + UIRenderer.getIcon("chart"),
+            "Transform Your Data into Charts"
+        );
     }
 
    // loads the csv file, as specified by the user
     private LoadResult loadCSV() {
-       System.out.println("\n" + "=".repeat(50));
-       System.out.println("STEP 1: LOAD CSV FILE");
-       System.out.println("=".repeat(50));
+       UIRenderer.printSectionHeader("STEP 1: LOAD CSV FILE");
 
-       System.out.print("📁 Enter CSV file path (or 'exit' to quit): ");
+       System.out.print(UIRenderer.getIcon("file") + " Enter CSV file path (or 'exit' to quit): ");
        String filePath = scanner.nextLine().trim();
 
        if (filePath.equalsIgnoreCase("exit")) {
@@ -112,23 +109,23 @@ public class CLIInterface {
        }
 
        if (filePath.isEmpty()) {
-           System.out.println("❌ File path cannot be empty!");
-           return LoadResult.FAILED; // oading failed
+           System.out.println(UIRenderer.getIcon("error") + " File path cannot be empty!");
+           return LoadResult.FAILED; // loading failed
        }
 
        try {
-           System.out.println("\n⏳ Loading CSV file...");
+           System.out.println("\n" + UIRenderer.getIcon("loading") + " Loading CSV file...");
            currentData = csvReader.readCSV(filePath);
 
-           System.out.println("✅ CSV loaded successfully!");
-           System.out.println("   📊 Rows: " + currentData.getRowCount());
-           System.out.println("   📋 Columns: " + currentData.getColumnCount());
+           System.out.println(UIRenderer.getIcon("success") + " CSV loaded successfully!");
+           System.out.println("   " + UIRenderer.getIcon("rows") + " Rows: " + currentData.getRowCount());
+           System.out.println("   " + UIRenderer.getIcon("cols") + " Columns: " + currentData.getColumnCount());
 
            return LoadResult.SUCCESS; // success
 
        } catch (IOException e) {
-           System.err.println("❌ Error loading CSV: " + e.getMessage());
-           System.out.println("   💡 Make sure the file path is correct and the file exists.");
+           System.err.println(UIRenderer.getIcon("error") + " Error loading CSV: " + e.getMessage());
+           System.out.println("   " + UIRenderer.getIcon("info") + " Make sure the file path is correct and the file exists.");
            return LoadResult.FAILED; // loading failed
        }
    }
@@ -137,23 +134,21 @@ public class CLIInterface {
 
     // Analyzes the loaded CSV columns
     private void analyzeColumns() {
-        System.out.println("\n⏳ Analyzing columns...");
+        System.out.println("\n" + UIRenderer.getIcon("loading") + " Analyzing columns...");
         columnInfos = csvAnalyzer.analyzeColumns(currentData);
-        System.out.println("✅ Analysis complete!");
+        System.out.println(UIRenderer.getIcon("success") + " Analysis complete!");
     }
 
 
     // Lets user select a column and generate a chart
     private boolean selectColumnAndGenerateChart() {
         // Display available columns
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("STEP 2: SELECT COLUMN TO VISUALIZE");
-        System.out.println("=".repeat(50));
+        UIRenderer.printSectionHeader("STEP 2: SELECT COLUMN TO VISUALIZE");
 
-        System.out.println("\n📊 Available Columns:\n");
+        System.out.println("\n" + UIRenderer.getIcon("chart") + " Available Columns:\n");
         for (int i = 0; i < columnInfos.size(); i++) {
             ColumnInfo info = columnInfos.get(i);
-            System.out.printf("%2d. %-25s [%s] - %d unique values%n", // used printf as it provides formatting options 
+            System.out.printf("%2d. %-25s [%s] - %d unique values%n", // used printf as it provides formatting options
                     i + 1,
                     info.getColumnName(),
                     info.getDataType(),
@@ -161,14 +156,14 @@ public class CLIInterface {
         }
 
         // Get user selection
-        System.out.print("\n🔢 Select column number (or 0 to go back): ");
+        System.out.print("\n" + UIRenderer.getIcon("number") + " Select column number (or 0 to go back): ");
         String input = scanner.nextLine().trim(); // see on iPad notes, explained why nextLine() is used in place of nextInt()
 
         int columnIndex;
         try {
             columnIndex = Integer.parseInt(input) - 1;
         } catch (NumberFormatException e) {
-            System.out.println("❌ Invalid input! Please enter a number.");
+            System.out.println(UIRenderer.getIcon("error") + " Invalid input! Please enter a number.");
             return false;
         }
 
@@ -177,14 +172,14 @@ public class CLIInterface {
         }
 
         if (columnIndex < 0 || columnIndex >= columnInfos.size()) {
-            System.out.println("❌ Invalid column number!");
+            System.out.println(UIRenderer.getIcon("error") + " Invalid column number!");
             return false;
         }
 
         ColumnInfo selectedColumn = columnInfos.get(columnIndex);
 
         // Show column details
-        System.out.println("\n✅ You selected: " + selectedColumn.getColumnName());
+        System.out.println("\n" + UIRenderer.getIcon("success") + " You selected: " + selectedColumn.getColumnName());
         System.out.println("   Type: " + selectedColumn.getDataType());
         System.out.println("   Total values: " + selectedColumn.getTotalValues());
         System.out.println("   Unique values: " + selectedColumn.getUniqueValues());
@@ -194,43 +189,41 @@ public class CLIInterface {
         List<ChartRecommendation> recommendations = chartRecommender.recommendCharts(selectedColumn);
 
         if (recommendations.isEmpty()) {
-            System.out.println("❌ No chart recommendations available for this column.");
+            System.out.println(UIRenderer.getIcon("error") + " No chart recommendations available for this column.");
             return false;
         }
 
         // Display recommendations
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("STEP 3: SELECT CHART TYPE");
-        System.out.println("=".repeat(50));
+        UIRenderer.printSectionHeader("STEP 3: SELECT CHART TYPE");
 
-        System.out.println("\n📈 Recommended Charts:\n");
+        System.out.println("\n" + UIRenderer.getIcon("graph") + " Recommended Charts:\n");
         for (int i = 0; i < recommendations.size(); i++) {
             ChartRecommendation rec = recommendations.get(i);
             System.out.printf("%d. %s (Priority: %d)%n",
                     i + 1,
                     formatChartTypeName(rec.getChartType()), // this method converts the enum to a nice, readable format
                     rec.getPriority());
-            System.out.println("   💡 " + rec.getReason());
+            System.out.println("   " + UIRenderer.getIcon("info") + " " + rec.getReason());
             if (rec.hasWarning()) {
-                System.out.println("   ⚠️  " + rec.getWarning());
+                System.out.println("   " + UIRenderer.getIcon("warning") + "  " + rec.getWarning());
             }
             System.out.println();
         }
 
         // Get chart selection
-        System.out.print("🔢 Select chart number: ");
+        System.out.print(UIRenderer.getIcon("number") + " Select chart number: ");
         input = scanner.nextLine().trim();
 
         int chartIndex;
         try {
             chartIndex = Integer.parseInt(input) - 1;
         } catch (NumberFormatException e) {
-            System.out.println("❌ Invalid input! Please enter a number.");
+            System.out.println(UIRenderer.getIcon("error") + " Invalid input! Please enter a number.");
             return false;
         }
 
         if (chartIndex < 0 || chartIndex >= recommendations.size()) {
-            System.out.println("❌ Invalid chart number!");
+            System.out.println(UIRenderer.getIcon("error") + " Invalid chart number!");
             return false;
         }
 
@@ -238,11 +231,9 @@ public class CLIInterface {
 
 
         // Get output file path and name
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("STEP 4: SPECIFY OUTPUT LOCATION");
-        System.out.println("=".repeat(50));
+        UIRenderer.printSectionHeader("STEP 4: SPECIFY OUTPUT LOCATION");
 
-        System.out.println("\n💾 Save Chart Options:");
+        System.out.println("\n" + UIRenderer.getIcon("save") + " Save Chart Options:");
         System.out.println("1. Save in current directory (default)");
         System.out.println("2. Specify custom path");
 
@@ -257,7 +248,7 @@ public class CLIInterface {
 
         if (saveOption.equals("2")) {
             // Custom path
-            System.out.print("\n📁 Enter directory path: ");
+            System.out.print("\n" + UIRenderer.getIcon("file") + " Enter directory path: ");
             System.out.println("   Examples:");
             System.out.println("   - Windows: C:/Users/YourName/Desktop/");
             System.out.println("   - Mac/Linux: /home/username/Documents/");
@@ -265,7 +256,7 @@ public class CLIInterface {
             String directoryPath = scanner.nextLine().trim();
 
             if (directoryPath.isEmpty()) {
-                System.out.println("⚠️  Empty path provided. Using current directory.");
+                System.out.println(UIRenderer.getIcon("warning") + "  Empty path provided. Using current directory.");
                 directoryPath = "";
             } else {
                 // Ensure path ends with separator
@@ -276,12 +267,12 @@ public class CLIInterface {
                 // Validate directory exists
                 java.io.File dir = new java.io.File(directoryPath);
                 if (!dir.exists() || !dir.isDirectory()) {
-                    System.out.println("⚠️  Directory does not exist. Using current directory.");
+                    System.out.println(UIRenderer.getIcon("warning") + "  Directory does not exist. Using current directory.");
                     directoryPath = "";
                 }
             }
 
-            System.out.print("\n📄 Enter filename (without .png extension): ");
+            System.out.print("\n" + UIRenderer.getIcon("file") + " Enter filename (without .png extension): ");
             String filename = scanner.nextLine().trim();
 
             if (filename.isEmpty()) {
@@ -299,8 +290,10 @@ public class CLIInterface {
             outputPath = directoryPath + filename + ".png";
 
         } else {
-            // Default: current directory
-            System.out.print("\n📄 Enter filename (press Enter for default): ");
+            // Default: user's home directory
+            String homeDir = System.getProperty("user.home");
+            System.out.print("\n" + UIRenderer.getIcon("file") + " Enter filename (press Enter for default): ");
+            System.out.println("   (Will be saved to: " + homeDir + ")");
             String filename = scanner.nextLine().trim();
 
             if (filename.isEmpty()) {
@@ -315,25 +308,25 @@ public class CLIInterface {
                 filename = filename.substring(0, filename.length() - 4);
             }
 
-            outputPath = filename + ".png";
+            outputPath = homeDir + "/" + filename + ".png";
         }
 
-        System.out.println("\n📍 Chart will be saved as: " + outputPath);
+        System.out.println("\n" + UIRenderer.getIcon("pin") + " Chart will be saved as: " + outputPath);
         System.out.print("Proceed? (y/n): ");
         String confirm = scanner.nextLine().trim().toLowerCase();
 
         if (!confirm.equals("y") && !confirm.equals("yes")) {
-            System.out.println("❌ Chart generation cancelled.");
+            System.out.println(UIRenderer.getIcon("error") + " Chart generation cancelled.");
             return false;
         }
 
         // Generate the chart
         try {
-            System.out.println("\n🎨 Generating chart...");
+            System.out.println("\n" + UIRenderer.getIcon("art") + " Generating chart...");
 
             // Special handling for scatter plot (needs two columns)
             if (selectedChart.getChartType() == ChartType.SCATTER_PLOT) {
-                System.out.println("⚠️  Scatter plot requires two numeric columns.");
+                System.out.println(UIRenderer.getIcon("warning") + "  Scatter plot requires two numeric columns.");
                 System.out.println("This feature is not yet implemented in CLI.");
                 System.out.println("Please select a different chart type.");
                 return false;
@@ -345,16 +338,16 @@ public class CLIInterface {
                     selectedChart.getChartType(),
                     outputPath);
 
-            System.out.println("✅ Chart generated successfully!");
-            System.out.println("📁 Saved as: " + outputPath);
+            System.out.println(UIRenderer.getIcon("success") + " Chart generated successfully!");
+            System.out.println(UIRenderer.getIcon("file") + " Saved as: " + outputPath);
 
             return true;
 
         } catch (IOException e) {
-            System.err.println("❌ Error generating chart: " + e.getMessage());
+            System.err.println(UIRenderer.getIcon("error") + " Error generating chart: " + e.getMessage());
             return false;
         } catch (UnsupportedOperationException e) {
-            System.err.println("❌ " + e.getMessage());
+            System.err.println(UIRenderer.getIcon("error") + " " + e.getMessage());
             return false;
         }
     }
